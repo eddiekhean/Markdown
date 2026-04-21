@@ -326,39 +326,15 @@ flowchart TD
     C --> D[PR/MR feature -> dev]
     D --> E[Merge dev, deploy dev]
     E --> F[Promote lên UAT]
-    F --> G{Release Decision: Toàn bộ scope được duyệt?}
+    F --> G{Release Decision:<br/>Toàn bộ scope duyệt?}
     G -->|Có| H[Path A: uat -> stg]
     H --> I[stg -> prod]
     I --> J[Tag release, deploy prod]
     J --> K[Sync ngược prod -> stg/uat/dev]
     K --> L[End]
     G -->|Không| M[Path B: Tạo release branch từ prod]
-    M --> N[Đưa code vào release branch<br/>(cherry-pick hoặc merge sạch)]
-    N --> O[Deploy release branch lên stg<br/>(hoặc direct nếu stg không sạch)]
-    O --> P[release branch -> prod]
-    P --> J
-```
-
-### 5.9 Sơ đồ quy trình
-
-Dưới đây là sơ đồ tổng quát cho quy trình end-to-end từ development đến production:
-
-```mermaid
-flowchart TD
-    A[Start: Development] --> B[Tạo feature branch từ dev]
-    B --> C[Code và commit]
-    C --> D[PR/MR feature -> dev]
-    D --> E[Merge dev, deploy dev]
-    E --> F[Promote lên UAT]
-    F --> G{Release Decision: Toàn bộ scope được duyệt?}
-    G -->|Có| H[Path A: uat -> stg]
-    H --> I[stg -> prod]
-    I --> J[Tag release, deploy prod]
-    J --> K[Sync ngược prod -> stg/uat/dev]
-    K --> L[End]
-    G -->|Không| M[Path B: Tạo release branch từ prod]
-    M --> N[Đưa code vào release branch<br/>(cherry-pick hoặc merge sạch)]
-    N --> O[Deploy release branch lên stg<br/>(hoặc direct nếu stg không sạch)]
+    M --> N[Cherry-pick hoặc merge sạch]
+    N --> O[Deploy release branch lên stg]
     O --> P[release branch -> prod]
     P --> J
 ```

@@ -48,7 +48,7 @@ Mục tiêu chính của tài liệu là đảm bảo:
 
 | Loại branch             | Format                             | Ví dụ                                 | Tạo từ                                 |
 | ----------------------- | ---------------------------------- | ------------------------------------- | -------------------------------------- |
-| Feature                 | `feature/<ticket-id>-<short-name>` | `feature/ABC-123-payment-method`      | `dev`                                  |
+| Feature                 | `feature/<ticket-id>-<short-name>` | `feature/ABC-123-payment-method`      | `prod`                                 |
 | Bugfix trước production | `bugfix/<ticket-id>-<short-name>`  | `bugfix/ABC-456-fix-login-validation` | `dev` hoặc branch môi trường liên quan |
 | Promote/UAT candidate   | `promote/<ticket-id>-to-uat`       | `promote/ABC-123-to-uat`              | `uat` hoặc baseline được thống nhất    |
 | Hotfix production       | `hotfix/<ticket-id>-<short-name>`  | `hotfix/ABC-999-fix-prod-timeout`     | `prod`                                 |
@@ -68,7 +68,7 @@ Mục tiêu chính của tài liệu là đảm bảo:
 
 1. Không commit trực tiếp vào `dev`, `uat`, `stg`, `prod`.
 2. Mọi thay đổi phải đi qua Pull Request/Merge Request.
-3. Feature branch mặc định tạo từ `dev`.
+3. Feature branch mặc định tạo từ `prod`.
 4. Hotfix production phải tạo từ `prod`.
 5. Không merge nguyên một branch môi trường lên branch cao hơn nếu branch đó chứa feature chưa được duyệt release.
 6. Khi chỉ release một phần code, phải dùng release branch tạo từ `prod` hoặc cherry-pick có kiểm soát.
@@ -82,7 +82,7 @@ Quy trình này áp dụng cho cả trường hợp release một feature đơn 
 
 Nguyên tắc nền:
 
-- Feature branch mặc định tạo từ `dev` để phục vụ development hằng ngày.
+- Feature branch mặc định tạo từ `prod` để đảm bảo điểm khởi đầu luôn sạch và đồng nhất với production baseline.
 - `prod` là source of truth cho production baseline. Trong một số repository, `prod` có thể được đặt tên là `main` hoặc `master`.
 - Mọi code được go-live cuối cùng phải vào lại `prod`.
 - Khi release chọn lọc, release branch phải tạo từ `prod` để tránh kéo theo code chưa được duyệt.
@@ -92,13 +92,13 @@ Ví dụ:
 - Feature A: `ABC-123 Payment Method`
 - Feature B: `ABC-456 Loyalty Point`
 
-### 5.1 Development: tạo feature branch từ `dev`
+### 5.1 Development: tạo feature branch từ `prod`
 
-Developer checkout từ `dev`:
+Developer checkout từ `prod`:
 
 ```bash
-git checkout dev
-git pull origin dev
+git checkout prod
+git pull origin prod
 git checkout -b feature/ABC-123-payment-method
 ```
 
@@ -122,7 +122,7 @@ feature/ABC-123-payment-method -> dev
 - Unit test pass nếu có.
 - Không có secret/config local bị commit.
 - Code được review.
-- Branch đã cập nhật với `dev` mới nhất nếu cần.
+- Branch đã rebase/merge với `dev` mới nhất nếu cần để tránh conflict.
 
 Sau khi merge, CI/CD deploy branch `dev` lên môi trường Development.
 
@@ -264,7 +264,7 @@ git cherry-pick <commit-feature-a-2>
 
 Chỉ dùng khi `feature/ABC-123-payment-method` còn sạch và không chứa commit của feature khác.
 
-Lưu ý: Chỉ dùng cách này nếu developer không merge/pull ngược `dev`, `uat`, `stg` hoặc branch môi trường khác vào feature branch. Nếu feature branch từng được cập nhật bằng cách merge/pull từ `dev` hoặc `uat`, branch đó có thể đã chứa lịch sử của các feature khác chưa được duyệt release. Khi đó không merge trực tiếp feature branch vào release branch; ưu tiên Cách 1 (Cherry-pick) hoặc tạo lại branch sạch từ `prod` rồi chỉ đưa đúng commit của feature cần release vào.
+Lưu ý: Vì feature branch được tạo từ `prod`, branch khởi đầu đã sạch. Tuy nhiên nếu developer đã merge/pull ngược `dev`, `uat`, `stg` hoặc branch môi trường khác vào feature branch trong quá trình phát triển, branch đó có thể đã chứa lịch sử của các feature khác chưa được duyệt release. Khi đó không merge trực tiếp feature branch vào release branch; ưu tiên Cách 1 (Cherry-pick) hoặc tạo lại branch sạch từ `prod` rồi chỉ đưa đúng commit của feature cần release vào.
 
 ```bash
 git checkout release/ABC-123-payment-method
@@ -321,7 +321,7 @@ Dưới đây là sơ đồ tổng quát cho quy trình end-to-end từ developm
 
 ```mermaid
 flowchart TD
-    A[Start: Development] --> B[Tạo feature branch từ dev]
+    A[Start: Development] --> B[Tạo feature branch từ prod]
     B --> C[Code và commit]
     C --> D[PR/MR feature -> dev]
     D --> E[Merge dev, deploy dev]
@@ -476,7 +476,7 @@ Lưu ý:
 
 ### 9.1 PR/MR vào `dev`
 
-- [ ] Branch tạo từ `dev`.
+- [ ] Branch tạo từ `prod`.
 - [ ] Code build pass.
 - [ ] Unit test/lint pass nếu có.
 - [ ] Không commit secret, token, file `.env`, config local.
@@ -706,7 +706,7 @@ Skill này giúp:
 
 - Hướng dẫn developer tạo branch, mở PR/MR, cherry-pick, merge, rebase, resolve conflict.
 - Kiểm tra rủi ro kéo nhầm feature chưa được release.
-- Nhắc rằng feature branch tạo từ `dev`, còn release branch tạo từ `prod`.
+- Nhắc rằng feature branch tạo từ `prod`, release branch cũng tạo từ `prod`.
 - Đề xuất đúng decision point: release toàn bộ scope hay release chọn lọc.
 - Cảnh báo trước thao tác rủi ro như force push, reset hard hoặc rewrite history.
 
@@ -726,7 +726,7 @@ Environment branches:
 
 Core rules:
 
-- Feature branches must be created from `dev`.
+- Feature branches must be created from `prod`.
 - `prod` is the source of truth for the production release baseline.
 - All released code must eventually be merged into `prod`.
 - Production hotfix branches must be created from `prod`.
@@ -759,5 +759,5 @@ Nguyên tắc quan trọng nhất:
 - `uat` là nơi QA/BA/PO xác nhận nghiệp vụ.
 - `stg` là release candidate gần production.
 - `prod` là production source of truth.
-- Feature branch mặc định tạo từ `dev`, nhưng release branch cho release chọn lọc phải tạo từ `prod`.
+- Feature branch mặc định tạo từ `prod` để đảm bảo điểm khởi đầu luôn sạch và đồng nhất với production baseline. Release branch cho release chọn lọc cũng tạo từ `prod`.
 - Khi nhiều feature song song nhưng release khác thời điểm, không promote nguyên branch đang chứa nhiều feature. Hãy tạo release branch từ `prod` và chỉ đưa đúng feature được duyệt vào release.
